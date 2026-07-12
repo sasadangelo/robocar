@@ -1,48 +1,49 @@
 #include <Arduino.h>
 #include <elegoo_robot_car.h>
+#include <ir_remote_control.h>
 
 ElegooRobotCar car;
+
+// Concrete hardware: an IR receiver on pin 12
+IRRemoteControl irRemote(12);
+
+// The rest of the program only talks to the RemoteControl interface, so
+// swapping the IR remote for e.g. a Bluetooth one only means changing this
+// line (a reference, not a pointer: no dynamic allocation, no null checks)
+RemoteControl &remote = irRemote;
 
 void setup()
 {
   // Initialize the motors hardware
   car.init();
+
+  // Initialize the remote control hardware
+  remote.init();
 }
 
 void loop()
 {
-  // --- STEP 1: Drive straight ---
-  // The car pushes forward at the configured speed (150 out of 255)
-  car.forward(150);
-  delay(2000);
+  Command cmd = remote.getCommand();
 
-  // --- STEP 2: Turn ---
-  // Pivot turn on the spot for the duration of the turn
-  car.backward(150);
-  delay(2000);
-
-  // --- STEP 3: Drive straight ---
-  // The car pushes forward at the configured speed (150 out of 255)
-  car.forward(150);
-  delay(2000);
-
-  // --- STEP 4: Drive straight ---
-  // The car pushes forward at the configured speed (150 out of 255)
-  car.turnLeftSmooth(150, 70);
-  delay(2000);
-
-  // --- STEP 5: Drive straight ---
-  // The car pushes forward at the configured speed (150 out of 255)
-  car.turnRightSmooth(150, 70);
-  delay(2000);
-
-  // --- STEP 6: Turn ---
-  // Pivot turn on the spot for the duration of the turn
-  car.backward(150);
-  delay(2000);
-
-  // --- STEP 3: Safety stop ---
-  // Stop everything before restarting the cycle
-  car.stop();
-  delay(2000);
+  switch (cmd)
+  {
+  case CMD_FORWARD:
+    car.forward(180);
+    break;
+  case CMD_BACKWARD:
+    car.backward(180);
+    break;
+  case CMD_LEFT:
+    car.turnLeft(160);
+    break;
+  case CMD_RIGHT:
+    car.turnRight(160);
+    break;
+  case CMD_STOP:
+    car.stop();
+    break;
+  case CMD_NONE:
+  default:
+    break;
+  }
 }

@@ -18,7 +18,9 @@ robocar/
 │   └── roboweave/
 │       ├── motor.h/.cpp        # Single motor control (IN1/IN2/ENA pins)
 │       ├── vehicle.h/.cpp      # Vehicle movement (forward, backward, turns)
-│       └── elegoo_robot_car.h/.cpp # Board-specific configuration for the Elegoo Robot Car V3.0
+│       ├── elegoo_robot_car.h/.cpp # Board-specific configuration for the Elegoo Robot Car V3.0
+│       ├── remote_control.h    # RemoteControl interface and universal Command enum
+│       └── ir_remote_control.h/.cpp # IR remote implementation of RemoteControl
 └── test/                    # Project tests
 ```
 
