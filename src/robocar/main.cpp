@@ -1,29 +1,33 @@
 #include <Arduino.h>
 #include <elegoo_robot_car.h>
 #include <ir_remote_control.h>
+#include <bluetooth_remote_control.h>
+#include <remote_control_hub.h>
 
 ElegooRobotCar car;
 
-// Concrete hardware: an IR receiver on pin 12
-IRRemoteControl irRemote(12);
-
-// The rest of the program only talks to the RemoteControl interface, so
-// swapping the IR remote for e.g. a Bluetooth one only means changing this
-// line (a reference, not a pointer: no dynamic allocation, no null checks)
-RemoteControl &remote = irRemote;
+// Central hub: aggregates every remote control hardware behind the single
+// RemoteControl interface, so the rest of the program never branches on
+// which concrete remote produced the command
+RemoteControlHub remoteHub;
 
 void setup()
 {
   // Initialize the motors hardware
   car.init();
 
-  // Initialize the remote control hardware
-  remote.init();
+  // Register the concrete remotes with the hub. Add or remove one here
+  // without touching loop().
+  remoteHub.registerRemote(new IRRemoteControl(12));
+  remoteHub.registerRemote(new BluetoothRemoteControl(9600));
+
+  // Initialize all registered remote control hardware
+  remoteHub.init();
 }
 
 void loop()
 {
-  Command cmd = remote.getCommand();
+  Command cmd = remoteHub.getCommand();
 
   switch (cmd)
   {
