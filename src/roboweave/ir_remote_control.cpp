@@ -14,9 +14,10 @@ void IRRemoteControl::init()
     IrReceiver.begin(pin, ENABLE_LED_FEEDBACK);
 }
 
-// Decodes the raw IR code and maps it to a universal command.
-// Two codes per command are handled because some remotes send a
-// different raw code depending on the NEC protocol variant.
+// Decodes the NEC command and maps it to a universal command. Matching
+// on the NEC command byte (instead of decodedRawData) is stable across
+// IRremote library versions, and keeps working on button-repeat frames
+// since decodedIRData.command is retained across repeats.
 Command IRRemoteControl::getCommand()
 {
     if (!IrReceiver.decode())
@@ -24,25 +25,20 @@ Command IRRemoteControl::getCommand()
         return CMD_NONE;
     }
 
-    unsigned long rawData = IrReceiver.decodedIRData.decodedRawData;
+    uint16_t command = IrReceiver.decodedIRData.command;
     IrReceiver.resume();
 
-    switch (rawData)
+    switch (command)
     {
-    case 0xFF629D:
-    case 0x1FE48B7:
+    case 0x46:
         return CMD_FORWARD;
-    case 0xFFA857:
-    case 0x1FE906F:
+    case 0x15:
         return CMD_BACKWARD;
-    case 0xFF22DD:
-    case 0x1FE10EF:
+    case 0x44:
         return CMD_LEFT;
-    case 0xFFC23D:
-    case 0x1FE58A7:
+    case 0x43:
         return CMD_RIGHT;
-    case 0xFF02FD:
-    case 0x1FEA05F:
+    case 0x40:
         return CMD_STOP;
     default:
         return CMD_NONE;
